@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Add Tracker{% endblock %}
+{% block content %}
+
+<form method="post">
+
+    <div class="form-group">
+
+        <h2>Edit Tracker</h2>
+
+        <div>
+
+
+            <br>
+
+        <label for="name">Name</label>
+        <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            placeholder="{{ tracker.name }}"
+            maxlength="30"
+            
+            disabled
+        />
+        <label for="description">Description</label>
+        <textarea
+            class="form-control"
+            id="description"
+            name="description"
+            maxlength="200"
+            required
+        >{{ tracker.description }}</textarea>
+
+
+        <label for="type">Tracker Type</label>
+                    <select id="type"  class="form-control"  name="type" required>
+                        {% if tracker.type=="Numerical" %}
+                        <option value="Numerical" selected>Numerical</option>
+                        {% else %}
+                        <option value="Numerical">Numerical</option>
+                        {% endif %}
+                        {% if tracker.type=="Multiple Choice" %}
+                        <option value="Multiple Choice"  selected>Multiple Choice</option>
+                        {% else %} 
+                        <option value="Multiple Choice">Multiple Choice</option>
+                        {% endif %}
+                        {% if tracker.type=="Time Duration" %}
+                        <option value="Time Duration"  selected>Time Duration</option>
+                        {% else %}
+                        <option value="Time Duration" >Time Duration</option>
+                        {% endif %}
+                        {% if tracker.type=="Boolean" %}
+                        <option value="Boolean"  selected >Boolean</option>
+                        {% else %}
+                        <option value="Boolean">Boolean</option>
+                        {% endif %}
+
+
+                    </select>
+
+        <label for="settings">Settings <small>(Optional)</small></label>
+        <input
+            type="text"
+            class="form-control"
+            id="settings"
+            name="settings"
+            value="{{ tracker.settings }}"
+            maxlength="80"
+
+        />
+
+        <br>
+        <button type="submit" class="btn btn-primary"><b>Update Tracker</b></button>
+
+        </div>
+
+
+    </div>
+</form>
+
+{% endblock %}

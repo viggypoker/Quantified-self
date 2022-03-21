@@ -1,37 +1,41 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 {% block title %}Register{% endblock %}
 {% block content %}
-    <h1>Register</h1>
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username(size=32) }}<br>
-            {% for error in form.username.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.email.label }}<br>
-            {{ form.email(size=64) }}<br>
-            {% for error in form.email.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size=32) }}<br>
-            {% for error in form.password.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password2.label }}<br>
-            {{ form.password2(size=32) }}<br>
-            {% for error in form.password2.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
+
+
+    <section class="vh-100 gradient-custom">
+        <div class="container py-5 h-100">
+          <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+              <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                <div class="card-body p-4 text-center">
+                    <h1 class="fw-bold mb-2 text-uppercase">Quantified Self</h1>
+                  <div class="mb-md-4 mt-md-4 pb-4">
+                    <h2 class="fw-bold mb-2 text-uppercase">Sign Up</h2>
+                    <form method="post"  novalidate>
+                        {{ form.hidden_tag() }}
+                    <div class="form-outline form-white mb-4 ">
+                      {{ wtf.form_field(form.username) }}
+                    </div>
+                    <div class="form-outline form-white mb-4 ">
+                        {{ wtf.form_field(form.email) }}
+                    </div>
+                    <div class="form-outline form-white mb-4">
+                        {{ wtf.form_field(form.password) }}
+                    </div>
+                    <div class="form-outline form-white mb-4">
+                        {{ wtf.form_field(form.password2) }}
+                    </div>
+
+                    <button class="btn btn-outline-light btn-lg px-5" type="submit">Register</button>
+                    </form>
+                  </div>
+                    
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 {% endblock %}

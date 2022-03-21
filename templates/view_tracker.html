@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ tracker.name}} - Tracker{% endblock %}
+{% block content %}
+<div class="container emp-profile shadow-lg">
+    <form method="post">
+        <br>
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Graph</a>
+            </li>
+        </ul>
+        <br>
+        <div class="row">
+
+            <div class="col-md-8" style="padding-top: 5px; padding-left: 32px">
+                <div class="tab-content profile-tab" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+
+
+                    {{ my_chart() }}
+<br><br>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Logs</a>
+            </li>
+        </ul>
+        <br>
+
+        <table class="table table-striped">
+        
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">On</th>
+                <th scope="col">Value</th>
+                <th scope="col">Notes</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+         
+        {% for log in logs %}
+            <tr>
+                <td>{{log.timestamp}}</td>
+                <td>{{log.value}}</td>
+                <td>{{log.notes}}</td>
+                <td>
+                <div class="dropdown">
+                <button class="btn dropdown-toggle btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
+                <b>Actions</b>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="{{ url_for('edit_log', l_id=log.l_id) }}">Edit Log</a>
+                    <a class="dropdown-item" href="{{ url_for('delete_log', l_id=log.l_id) }}">Remove Log</a>
+                </div>
+                </div>
+                </td>
+            </tr>
+        {% endfor %}
+        
+        </tbody>
+        </table><br>
+
+    </form>
+</div>
+
+{% endblock %}

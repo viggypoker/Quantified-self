@@ -36,22 +36,35 @@
       integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
       crossorigin="anonymous"
     ></script>
-    {% if title %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    {{ init_charts }}
     <title>{% block title %}{% endblock %}</title>
-    {% endif %}
+  <style>
+    .gradient-custom {
+  background: #6a11cb;
+
+  background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+
+  background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1))
+}
+  </style>
 </head>
 <body>
-    <div>
-        {% if not current_user.is_anonymous %}
-        Hello {{current_user.username}}
-        <a href="{{ url_for('index') }}">Home</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
+  {% if not current_user.is_anonymous %}
 
-        {% endif %}
-    </div>
-    <hr>
+    <nav class="navbar navbar-dark bg-primary">
+      <div class="container-fluid">
+        
+        <a class="navbar-brand" href="{{ url_for('index') }}">Home</a>
+        <div class="navbar-brand">Hello {{current_user.username}}</div> 
+        <a class="navbar-brand" href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </nav>
+    <br><br>
+  {% endif %}
 
-    {% block content %}{% endblock %}
+  {% block content %}{% endblock %}
 
 </body>
 </html>

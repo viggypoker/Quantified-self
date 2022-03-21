@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Edit Log{% endblock %}
+{% block content %}
+
+<form method="post">
+
+    <div class="form-group">
+
+        <h2>Edit Log for {{tracker.name}}</h2>
+        <div>
+        <br>
+        <div class="input-group mb-3">
+        <span class="input-group-text">TimeStamp</span>
+        <input
+            type="datetime-local"
+            class="form-control"
+            id="timestamp"
+            name="timestamp"
+            value="{{ time }}"
+            placeholder="{{ time }}"
+            required
+        />
+        </div>
+        <br>
+        <div class="input-group mb-3">
+        <span class="input-group-text">Value</span>
+        {% if tracker.type=="Numerical" %}
+        <input 
+            class="form-control"
+            type="number"
+            id="value"
+            name="value"
+            value = "{{ log.value }}"
+            placeholder="{{ log.value }}"
+            required
+        />
+        {% elif tracker.type=="Multiple Choice" %}
+            {% for i in mcv %}
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" 
+                    type="radio" 
+                    id="value" 
+                    value="{{ i }}"
+                    name="value"
+                    placeholder="Enter value"
+                    required
+                    />
+                    <label class="form-check-label" for="value"> {{ i }}</label>
+                </div>
+            {% endfor %}
+
+        {% elif tracker.type=="Time Duration" %}
+        <input 
+            class="form-control"
+            type="time" 
+            step="1"
+            id="value"
+            name="value"
+            value = "{{ log.value }}"
+            placeholder="{{ log.value }}"
+        />
+        {% elif tracker.type=="Boolean" %}
+        
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="value" name="value" value="True" checked>
+                <label class="form-check-label" for="value">True</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="value" name="value" value="False" >
+                <label class="form-check-label" for="value">False</label>
+            </div>
+        
+        {% endif %}   
+        </div> 
+        <br>
+        <div class="input-group mb-3">
+        <span class="input-group-text">Note</span>
+        <textarea
+            class="form-control"
+            id="note"
+            name="note"
+            placeholder="Enter note"
+            maxlength="200"
+            required
+        >{{ log.notes }}</textarea>
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary"><b>Update Log</b></button>
+
+        </div>
+
+
+    </div>
+</form>
+
+{% endblock %}

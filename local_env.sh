@@ -19,7 +19,7 @@ pip install flask-restful
 pip install flask-login
 pip install email-validator
 pip install flask-wtf
-pip install matplotlib
+pip install Flask-GoogleCharts
 
 echo "INSTALLED LIBRARIES"
 deactivate

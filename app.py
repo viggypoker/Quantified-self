@@ -3,11 +3,15 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager,current_user,login_required,logout_user,login_user
-from datetime import datetime
+from datetime import date, datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from werkzeug.urls import url_parse
+from dateutil import parser
+from flask_charts import GoogleCharts, Chart
+from flask_bootstrap import Bootstrap
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'this is a secret key'
@@ -16,7 +20,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login = LoginManager(app)
 login.login_view = 'login'
-
+charts = GoogleCharts(app)
+Bootstrap(app)
 #Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -143,6 +148,117 @@ def add_tracker_page():
             return redirect(url_for('index'))
 
     return render_template("add_tracker_page.html")
+
+@app.route('/add-log-page/<int:t_id>', methods=['GET', 'POST'])
+@login_required
+def add_log(t_id):
+    tracker = Tracker.query.get(t_id)
+    now = datetime.now()
+    time = now.strftime("%Y-%m-%dT%H:%M:%S")
+    mcv=[]
+    if tracker.type=="Multiple Choice":
+        for i in tracker.settings.split(","):
+            mcv.append(i)
+    if request.method == 'POST':
+        stringtime = request.form.get('timestamp')
+        value = request.form.get('value')
+        notes = request.form.get('note')
+        if stringtime:
+            timestamp = parser.parse(stringtime)
+            log = Log(timestamp=timestamp, value=value, notes=notes , user_id = current_user.id,tracker_id=t_id)
+        else:
+            log = Log(value=value, notes=notes , user_id = current_user.id,tracker_id=t_id)
+        db.session.add(log)
+        db.session.commit()
+        return redirect(url_for('index'))
+
+    return render_template('add_log_page.html', tracker = tracker , user=current_user, time=time, mcv=mcv)
+
+@app.route('/edit-tracker/<int:t_id>', methods=['GET', 'POST'])
+@login_required
+def edit_tracker(t_id):
+    tracker = Tracker.query.get(t_id)
+
+    if request.method == 'POST':
+        description = request.form.get('description')
+        tracker_type = request.form.get('type')
+        settings = request.form.get('settings')
+        tracker.description = description
+        tracker.type = tracker_type
+        tracker.settings = settings
+        db.session.commit()
+        return redirect(url_for('index'))
+
+    return render_template("edit_tracker_page.html", user=current_user, tracker=tracker)
+
+@app.route('/delete-tracker/<int:t_id>', methods=['GET', 'POST'])
+@login_required
+def delete_tracker(t_id):
+    tracker = Tracker.query.get(t_id)
+    db.session.delete(tracker)
+    db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/view_tracker/<int:t_id>', methods=['GET', 'POST'])
+@login_required
+def view_tracker(t_id):
+    tracker = Tracker.query.get(t_id)
+    trackers = Tracker.query.filter_by(t_id = t_id)
+    logs = Log.query.filter_by(tracker_id = t_id)
+    my_chart = Chart("LineChart", "my_chart")
+    my_chart.data.add_column("datetime", "TimeStamp")
+    
+    if tracker.type=="Numerical":
+        my_chart.data.add_column("number", "Value")
+        for i in logs:
+            time = i.timestamp
+            my_chart.data.add_row([time, i.value])
+
+    elif tracker.type=="Time Duration":
+        my_chart.data.add_column("datetime", "Value")
+        for i in logs:
+            time = i.timestamp
+            value = datetime.strptime(i.value,"%H:%M:%S")
+            my_chart.data.add_row([time, value])
+    else:
+        my_chart.data.add_column("number", "Value")
+        for i in logs:
+            time = i.timestamp
+            my_chart.data.add_row([time])
+        
+    return render_template("view_tracker.html", user=current_user, tracker=tracker, logs = logs , my_chart=my_chart)
+    
+@app.route('/edit-log-page/<int:l_id>', methods=['GET', 'POST'])
+@login_required
+def edit_log(l_id):
+    log = Log.query.get(l_id)
+    tracker = Tracker.query.get(log.tracker_id)
+    time = log.timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+    mcv=[]
+    if tracker.type=="Multiple Choice":
+        for i in tracker.settings.split(","):
+            mcv.append(i)
+    if request.method == 'POST':
+        stringtime = request.form.get('timestamp')
+        value = request.form.get('value')
+        notes = request.form.get('notes')
+        timestamp = parser.parse(stringtime)
+        log.timestamp = timestamp
+        log.value = value
+        log.notes = notes
+        db.session.commit()
+        return redirect(url_for('view_tracker', t_id=log.tracker_id))
+    return render_template("edit_log_page.html", user=current_user, tracker=tracker, log=log,time=time,mcv=mcv)
+
+@app.route('/delete-log/<int:l_id>', methods=['GET', 'POST'])
+@login_required
+def delete_log(l_id):
+    log = Log.query.get(l_id)
+    t_id = log.tracker_id
+    db.session.delete(log)
+    db.session.commit()
+    return redirect(url_for('view_tracker', t_id=t_id))
+
 
 
 
