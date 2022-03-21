@@ -1,0 +1,153 @@
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import ForeignKey
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin, LoginManager,current_user,login_required,logout_user,login_user
+from datetime import datetime
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+from werkzeug.urls import url_parse
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'this is a secret key'
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///project_database.sqlite3"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+login = LoginManager(app)
+login.login_view = 'login'
+
+#Models
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(60), index=True, unique=True)
+    email = db.Column(db.String(120), index=True, unique=True)
+    password_hash = db.Column(db.String(128))
+    trackers = db.relationship('Tracker')
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Tracker(db.Model):
+    t_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(60))
+    description = db.Column(db.String(150))
+    type = db.Column(db.String(60))
+    settings = db.Column(db.String(60))
+    log = db.relationship('Log')
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+class Log(db.Model):
+    l_id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    value = db.Column(db.Integer)
+    notes = db.Column(db.String(150))
+    tracker_id = db.Column(db.Integer, db.ForeignKey('tracker.t_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+#Forms
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Sign In')
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different email address.')
+
+#Routes
+
+
+@app.route('/')
+@app.route('/index')
+@login_required
+def index():
+    tracker = Tracker.query.all()
+    return render_template("index.html", user=current_user, tracker=tracker)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            return redirect(url_for('login'))
+        login_user(user, remember=True)
+        return redirect(url_for('index'))
+
+    return render_template('login.html', title='Sign In', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
+
+@app.route('/add-tracker-page', methods=['GET', 'POST'])
+@login_required
+def add_tracker_page():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        tracker_type = request.form.get('type')
+        settings = request.form.get('settings')
+
+        current_user_id = current_user.id
+        tracker = Tracker.query.filter_by(name=name).first()
+        if tracker and current_user_id == tracker.user_id:
+            return redirect(url_for('index'))
+        else:
+            new_tracker = Tracker(name=name, description=description, type=tracker_type, settings=settings,
+                                    user_id=current_user_id)
+            db.session.add(new_tracker)
+            db.session.commit()
+            return redirect(url_for('index'))
+
+    return render_template("add_tracker_page.html")
+
+
+
+
+
+
+if __name__=='__main__':
+    app.run(debug = True)

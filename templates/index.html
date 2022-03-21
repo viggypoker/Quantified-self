@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<div class="container shadow-lg  " >
+
+<table class="table table-striped ">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Tracker</th>
+      <th scope="col">Description</th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+{% for tracker in tracker %}
+    {% if tracker.user_id==user.id  %}
+    <tr>
+      {% set tracker_id=tracker.t_id %}
+      <td><a href="">{{tracker.name}}</a></td>
+      <td>{{tracker.description}}</td>
+      <td><a href="" class="btn" >✚</a></td>
+      <td>
+
+        <div class="dropdown">
+            <button class="btn dropdown-toggle btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <b>Actions</b>
+            </button>
+
+
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="">Edit Tracker</a>
+                <a class="dropdown-item" href="">Remove Tracker</a>
+            </div>
+        </div>
+
+      </td>
+    </tr>
+    {% endif %}
+{% endfor %}
+
+  </tbody>
+</table>
+        <div align="center">
+            <a href="/add-tracker-page" class="btn btn-primary"><b>Add Tracker</b></a>
+        </div>
+</div>
+{% endblock %}
