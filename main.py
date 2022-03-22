@@ -7,7 +7,6 @@ from datetime import date, datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from werkzeug.urls import url_parse
 from dateutil import parser
 from flask_charts import GoogleCharts, Chart
 from flask_bootstrap import Bootstrap
