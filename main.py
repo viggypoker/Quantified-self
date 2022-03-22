@@ -11,7 +11,7 @@ from werkzeug.urls import url_parse
 from dateutil import parser
 from flask_charts import GoogleCharts, Chart
 from flask_bootstrap import Bootstrap
-
+import email_validator
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'this is a secret key'
@@ -203,30 +203,39 @@ def delete_tracker(t_id):
 @login_required
 def view_tracker(t_id):
     tracker = Tracker.query.get(t_id)
-    trackers = Tracker.query.filter_by(t_id = t_id)
-    logs = Log.query.filter_by(tracker_id = t_id)
-    my_chart = Chart("LineChart", "my_chart")
-    my_chart.data.add_column("datetime", "TimeStamp")
-    
-    if tracker.type=="Numerical":
-        my_chart.data.add_column("number", "Value")
-        for i in logs:
-            time = i.timestamp
-            my_chart.data.add_row([time, i.value])
+    logs = Log.query.filter_by(tracker_id = t_id).all() 
+    if logs: 
+        my_chart = Chart("LineChart", "my_chart")
+        my_chart.data.add_column("datetime", "TimeStamp")
+        if tracker.type=="Numerical":
+            my_chart.data.add_column("number", "Value")
+            for i in logs:
+                time = i.timestamp
+                my_chart.data.add_row([time, i.value])
 
-    elif tracker.type=="Time Duration":
-        my_chart.data.add_column("datetime", "Value")
-        for i in logs:
-            time = i.timestamp
-            value = datetime.strptime(i.value,"%H:%M:%S")
-            my_chart.data.add_row([time, value])
-    else:
-        my_chart.data.add_column("number", "Value")
-        for i in logs:
-            time = i.timestamp
-            my_chart.data.add_row([time])
+        elif tracker.type=="Time Duration":
+            my_chart.data.add_column("datetime", "Value")
+            for i in logs:
+                time = i.timestamp
+                value = datetime.strptime(i.value,"%H:%M:%S")
+                my_chart.data.add_row([time, value])
+
+        elif tracker.type=="Boolean":
+            my_chart.data.add_column("number", "Value")
+            for i in logs:
+                value = 0
+                time = i.timestamp
+                if i.value=="True":
+                  value=1              
+                my_chart.data.add_row([time,value])
+        else:
+            my_chart.data.add_column("number", "Value")
+            for i in logs:
+                time = i.timestamp
+                my_chart.data.add_row([time])
+        return render_template("view_tracker.html", user=current_user, tracker=tracker, logs = logs , my_chart=my_chart)
         
-    return render_template("view_tracker.html", user=current_user, tracker=tracker, logs = logs , my_chart=my_chart)
+    return redirect(url_for('index'))
     
 @app.route('/edit-log-page/<int:l_id>', methods=['GET', 'POST'])
 @login_required
@@ -259,11 +268,5 @@ def delete_log(l_id):
     db.session.commit()
     return redirect(url_for('view_tracker', t_id=t_id))
 
-
-
-
-
-
-
 if __name__=='__main__':
-    app.run(debug = True)
+    app.run(host='0.0.0.0', debug = True)

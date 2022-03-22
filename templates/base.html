@@ -38,15 +38,17 @@
     ></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
     {{ init_charts }}
+
     <title>{% block title %}{% endblock %}</title>
   <style>
     .gradient-custom {
   background: #6a11cb;
 
-  background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+  background: -webkit-linear-gradient(to right, rgb(15, 153, 233), rgb(15, 153, 233));
 
-  background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1))
+  background: linear-gradient(to right, rgb(15, 153, 233), rgb(15, 153, 233))
 }
   </style>
 </head>
@@ -57,11 +59,10 @@
       <div class="container-fluid">
         
         <a class="navbar-brand" href="{{ url_for('index') }}">Home</a>
-        <div class="navbar-brand">Hello {{current_user.username}}</div> 
+        <div class="navbar-brand text-uppercase font-weight-bold">Hello {{current_user.username}}</div> 
         <a class="navbar-brand" href="{{ url_for('logout') }}">Logout</a>
       </div>
     </nav>
-    <br><br>
   {% endif %}
 
   {% block content %}{% endblock %}
